@@ -10,6 +10,7 @@ export default class BoatSearchForm extends LightningElement {
   error = undefined;
 
   // Needs explicit track due to nested data
+  @track
   searchOptions;
 
   // Wire a custom Apex method
