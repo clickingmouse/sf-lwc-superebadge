@@ -1,6 +1,8 @@
-import { LightningElement } from "lwc";
+import { LightningElement, wire, api, track } from "lwc";
 // imports
 // import getBoatTypes from the BoatDataService => getBoatTypes method';
+import getBoatTypes from "@salesforce/apex/BoatDataService.getBoatTypes";
+
 export default class BoatSearchForm extends LightningElement {
   selectedBoatTypeId = "";
 
