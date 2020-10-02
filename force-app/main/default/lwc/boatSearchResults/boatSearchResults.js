@@ -12,7 +12,7 @@ const SUCCESS_VARIANT = "success";
 const ERROR_TITLE = "Error";
 const ERROR_VARIANT = "error";
 //Boat’s Name, Length, Price, and Description fields
-const COLUMNS = (columns = [
+const COLUMNS = [
   { label: "Name", fieldName: "Name", editable: "true", type: "text" },
   {
     label: "Length",
@@ -32,7 +32,7 @@ const COLUMNS = (columns = [
     editable: "true",
     type: "text"
   }
-]);
+];
 /////////////////////////////////////////////////////////////////
 export default class BoatSearchResults extends LightningElement {
   selectedBoatId;
