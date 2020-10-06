@@ -1,15 +1,36 @@
-import { LightningElement } from "lwc";
+import { LightningElement, wire } from "lwc";
+import { NavigationMixin } from "lightning/navigation";
+import { getRecord, getFieldValue } from "lightning/uiRecordApi";
+import BOATMC from "@salesforce/messageChannel/BoatMessageChannel__c";
+
+import {
+  publish,
+  subscribe,
+  unsubscribe,
+  APPLICATION_SCOPE,
+  MessageContext
+} from "lightning/messageService";
+
 // Custom Labels Imports
 // import labelDetails for Details
+import labelDetails from "@salesforce/label/c.Details";
 // import labelReviews for Reviews
+import labelReviews from "@salesforce/label/c.Reviews";
 // import labelAddReview for Add_Review
+import labelAddReview from "@salesforce/label/c.Add_Review";
 // import labelFullDetails for Full_Details
+import labelFullDetails from "@salesforce/label/c.Full_Details";
 // import labelPleaseSelectABoat for Please_select_a_boat
+import labelPleaseSelectABoat from "@salesforce/label/c.Please_select_a_boat";
+
 // Boat__c Schema Imports
 // import BOAT_ID_FIELD for the Boat Id
+import BOAT_ID_FIELD from "@salesforce/schema/Boat__c.Id";
 // import BOAT_NAME_FIELD for the boat Name
+import BOAT_NAME_FIELD from "@salesforce/schema/Boat__c.Name";
+
 const BOAT_FIELDS = [BOAT_ID_FIELD, BOAT_NAME_FIELD];
-export default class BoatDetailTabs extends LightningElement {
+export default class BoatDetailTabs extends NavigationMixin(LightningElement) {
   boatId;
   wiredRecord;
   label = {
@@ -20,12 +41,21 @@ export default class BoatDetailTabs extends LightningElement {
     labelPleaseSelectABoat
   };
 
+  @wire(MessageContext)
+  messageContext;
+
   // Decide when to show or hide the icon
   // returns 'utility:anchor' or null
-  get detailsTabIconName() {}
+  get detailsTabIconName() {
+    return this.wiredRecord ? "utility:anchor" : null;
+  }
 
   // Utilize getFieldValue to extract the boat name from the record wire
-  get boatName() {}
+  @wire(getRecord, { recordId: "$boatId", fields: BOAT_FIELDS })
+  wiredRecord;
+  get boatName() {
+    return getFieldValue(this.wiredRecord, BOAT_NAME_FIELD);
+  }
 
   // Private
   subscription = null;
@@ -33,14 +63,39 @@ export default class BoatDetailTabs extends LightningElement {
   // Subscribe to the message channel
   subscribeMC() {
     // local boatId must receive the recordId from the message
+    this.subscription = subscribe(
+      this.messageContext,
+      BOATMC,
+      (message) => {
+        //this.recordId(message.boatId);
+        this.boatId = message.recordId;
+      },
+      { scope: APPLICATION_SCOPE }
+    );
   }
 
   // Calls subscribeMC()
-  connectedCallback() {}
+  connectedCallback() {
+    this.subscribeMC();
+  }
 
   // Navigates to record page
-  navigateToRecordViewPage() {}
+  navigateToRecordViewPage() {
+    this[NavigationMixin.Navigate]({
+      type: "standard__recordPage",
+      attributes: {
+        recordId: this.boatId,
+        //objectApiName: "Boat__c",
+        actionName: "view"
+      }
+    });
+  }
 
   // Navigates back to the review list, and refreshes reviews component
-  handleReviewCreated() {}
+  //must set the <lightning-tabset> Reviews tab to active using querySelector() and activeTabValue
+  handleReviewCreated() {
+    this.template.querySelector("lightning-tabset").activeTabValue = "reviews";
+    //    this.template.querySelector("c-boat-search-results").searchBoats(boatTypeId);
+    this.template.querySelector("c-boat-reviews").refresh();
+  }
 }

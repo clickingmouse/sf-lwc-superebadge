@@ -30,6 +30,8 @@ export default class BoatReviews extends NavigationMixin(LightningElement) {
   }
 
   // Public method to force a refresh of the reviews invoking getReviews
+  ////////////////////////////////////////////////////////////////////////
+  //TO DO
   @api
   refresh() {}
 
