@@ -1,9 +1,9 @@
 <template>
   <!-- lightning data service code -->
-  <!-- <lightning-record-edit-form> using boatReviewObject -->
+  <!-- <lightning-record-edit-form> using boatReviewObject 
+    record-id={boatId}-->
   <lightning-record-edit-form
-    obj-api-name="BoatReview__c"
-    record-id={boatId}
+    object-api-name={boatReviewObject}
     onsuccess={handleSuccess}
     onsubmit={handleSubmit}
   >
@@ -11,16 +11,20 @@
       <lightning-layout-item size="8" padding="horizontal-small">
         <div class="slds-form-element">
           <!-- review subject field code using nameField -->
+          <lightning-input-field field-name={nameField}>
+          </lightning-input-field>
         </div>
       </lightning-layout-item>
+
       <lightning-layout-item size="4" padding="horizontal-small">
         <div class="slds-form-element">
           <label class="slds-form-element__label" for="record-name"
-            >Rating</label
+            >Rating:</label
           >
           <div class="slds-form-element__control">
             <!-- add five star rating component -->
             <c-five-star-rating
+              value={rating}
               onratingchange={handleRatingChanged}
             ></c-five-star-rating>
           </div>
@@ -28,10 +32,8 @@
       </lightning-layout-item>
       <lightning-layout-item padding="horizontal-small">
         <!-- review comment field code using commentField -->
-        <label class="slds-form-element__label" for="Name"
-          >Review Subject</label
-        >
-        <lightning-input-field field-name="Name"> </lightning-input-field>
+        <lightning-input-field field-name={commentField}>
+        </lightning-input-field>
         <label class="slds-form-element__label" for="Comment__c">Comment</label>
         <lightning-input-field field-name="Comment__c"> </lightning-input-field>
       </lightning-layout-item>

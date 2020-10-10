@@ -1,5 +1,5 @@
 // imports
-import { LightningElement, api } from "lwc";
+import { LightningElement, api, track } from "lwc";
 // import BOAT_REVIEW_OBJECT from schema - BoatReview__c
 import BOAT_REVIEW_OBJECT from "@salesforce/schema/BoatReview__c";
 // import NAME_FIELD from schema - BoatReview__c.Name
@@ -12,7 +12,7 @@ const SUCCESS_VARIANT = "success";
 // Hide the real field’s label using the variant label-hidden.
 export default class BoatAddReviewForm extends LightningElement {
   // Private
-  boatId;
+  @track boatId;
   rating;
   //rating=0;
   boatReviewObject = BOAT_REVIEW_OBJECT;
@@ -42,8 +42,9 @@ export default class BoatAddReviewForm extends LightningElement {
   // This function must prevent the anchor element from navigating to a URL.
   // form to be submitted: lightning-record-edit-form
   handleSubmit(event) {
-    event.preventDefault();
+    //event.preventDefault();
     //   const fields = event.detail.fields;
+    console.log(event.details.fields);
     const fields = event.detail.fields;
     fields.Boat__c = this.boatId;
     fields.Rating__c = this.rating;

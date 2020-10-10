@@ -53,7 +53,7 @@
                     <p class="slds-text-body_small">
                       <!-- display created  date -->
                       <lightning-formatted-date-time
-                        value={boatRevew.CreatedBy.CreatedDate}
+                        value={boatReview.CreatedDate}
                       ></lightning-formatted-date-time>
                     </p>
                   </div>
@@ -63,8 +63,7 @@
                     <!-- display Name -->{boatReview.Name}
                   </p>
                   <!-- display Comment__c -->
-                  <lightning-formatted-rich-text>
-                    {boatRevew.Comment__c}
+                  <lightning-formatted-rich-text value={boatReview.Comment__c}>
                   </lightning-formatted-rich-text>
                 </div>
                 <!-- display five star rating on readonly mode -->

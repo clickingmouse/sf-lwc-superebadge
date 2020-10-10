@@ -1,4 +1,4 @@
-import { LightningElement, api, track, wire } from "lwc";
+import { LightningElement, api, wire, track } from "lwc";
 import getBoats from "@salesforce/apex/BoatDataService.getBoats";
 import { updateRecord } from "lightning/uiRecordApi";
 import { ShowToastEvent } from "lightning/platformShowToastEvent";
@@ -35,10 +35,14 @@ const COLUMNS = [
 ];
 /////////////////////////////////////////////////////////////////
 export default class BoatSearchResults extends LightningElement {
-  selectedBoatId;
+  selectedBoatId = "";
   columns = COLUMNS;
+  //
+  rowOffset = 0;
+  @track draftValues = [];
   boatTypeId = "";
-  boats;
+  @track boats;
+  error = undefined;
   isLoading = false;
 
   // wired message context
@@ -48,42 +52,73 @@ export default class BoatSearchResults extends LightningElement {
   // wired getBoats method
   @wire(getBoats, { boatTypeId: "$boatTypeId" })
   wiredBoats(result) {
+    //this.boats = result;
+    console.log(result);
     this.boats = result;
+    if (result.error) {
+      this.error = result.error;
+      this.boats = undefined;
+      console.log("error: " + result.error);
+    }
+    this.isLoading = false;
+    this.notifyLoading(this.isLoading);
   }
 
   // public function that updates the existing boatTypeId property
   // uses notifyLoading
   @api
   searchBoats(boatTypeId) {
+    // this.boatTypeId = boatTypeId;
+    // this.notifyLoading();
+    console.log("boatSearchResults.searchBoats()" + boatTypeId);
+    this.isLoading = true;
+    this.notifyLoading(this.isLoading);
     this.boatTypeId = boatTypeId;
-    this.notifyLoading();
   }
 
   // this public function must refresh the boats asynchronously
   // uses notifyLoading
   //On success, call the function refresh(), that must trigger the loading spinner, invoke refreshApex() to refresh a wired property and then stop the spinner.
   //The refreshApex() function returns a Promise.
-  async refresh() {
+  @api async refresh() {
     //load spinner
-    this.notifyLoading();
+    //this.notifyLoading();
     //invoke refreshApex
-    refreshApex(this.boats).then(this.notifyLoading());
+    //refreshApex(this.boats).then(this.notifyLoading());
     //stop spinner
+
+    this.isLoading = true;
+    this.notifyLoading(this.isLoading);
+    await refreshApex(this.boats);
+    this.isLoading = false;
+    this.notifyLoading(this.isLoading);
   }
 
   // this function must update selectedBoatId and call sendMessageService
   //+to update the information about the currently selected boat Id based on the event.
   updateSelectedTile(event) {
+    //event.preventDefault();
+    //console.log("preventdefault");
+
     //    if(event.detail.boatId) {
+
     this.selectedBoatId = event.detail.boatId;
-    this.sendMessageService();
+    console.log(
+      "boatSearchResults.upateSelectedTile.selectedBoatId:" +
+        this.selectedBoatId
+    );
+    this.sendMessageService(this.selectedBoatId);
+    console.log("e:updateSelectedTile>>" + event.detail.boatId);
     //   }
   }
 
   // Publishes the selected boat Id on the BoatMC.
   sendMessageService(boatId) {
     // explicitly pass boatId to the parameter recordId
-    publish(this.messageContext, BOATMC, boatId);
+    console.log("publishing:" + boatId);
+    //debugger;
+    publish(this.messageContext, BOATMC, { recordId: boatId });
+    //debugger;
   }
 
   // This method must save the changes in the Boat Editor
@@ -101,6 +136,7 @@ export default class BoatSearchResults extends LightningElement {
     Promise.all(promises)
       .then(() => {
         // save changes
+
         const successToastEvent = new ShowToastEvent({
           title: SUCCESS_TITLE,
           message: MESSAGE_SHIP_IT,
@@ -118,8 +154,8 @@ export default class BoatSearchResults extends LightningElement {
         this.dispatchEvent(errorToastEvent);
       })
       .finally(() => {
-        //clear lightning-datatable draft values
-        this.refresh();
+        this.notifyLoading(false);
+        return this.refresh();
       });
   }
 
@@ -127,9 +163,11 @@ export default class BoatSearchResults extends LightningElement {
   //In this component, you need to dispatch a custom event called either loading or doneloading when searching for the boats. Make sure to use the isLoading private property to dispatch the event only when needed
 
   notifyLoading(isLoading) {
-    isLoading
-      ? this.dispatchEvent(new CustomEvent("loading"))
-      : this.dispatchEvent(new CustomEvent("doneloading"));
+    if (isLoading) {
+      this.dispatchEvent(new CustomEvent("loading"));
+    } else {
+      this.dispatchEvent(new CustomEvent("doneloading"));
+    }
 
     // const loadingEvent = new CustomEvent("loading", {
     //   detail: "loading"
